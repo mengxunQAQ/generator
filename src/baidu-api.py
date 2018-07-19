@@ -32,7 +32,7 @@ class API:
     q = Query()
     def __init__(self, q):
         self.q = q
-        self.fromLang = 'en'
+        self.fromLang = 'auto'
         self.toLang = 'zh'
         self.salt = random.randint(32768, 65536)
         self.sign = appid + self.q + str(self.salt) + secretKey
@@ -47,14 +47,15 @@ class API:
 
     def request(self):
         rep = requests.get(url=self.url)
+        return json.loads(rep.text).get('trans_result')
 
-        print(rep.text)
-        print(json.loads(rep.text))
+    def __repr__(self):
+        rep = self.request()
+        if not rep:
+            raise ValueError("error")  # todo: error message
+        return "result:%s"%(rep[0].get('dst'))
 
-    def __setattr__(self, name, value):
-        print(123)
-        super(API, self).__setattr__(name, value)
 
 if __name__ == '__main__':
     instance = API(sys.argv)
-    instance.request()
+    print(instance)
