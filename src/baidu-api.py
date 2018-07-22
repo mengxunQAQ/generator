@@ -53,7 +53,7 @@ class API:
         rep = self.request()
         if not rep:
             raise ValueError("error")  # todo: error message
-        return "result:%s"%(rep[0].get('dst'))
+        return "result: %s"%(rep[0].get('dst'))  # todo: en --> zh, zh --> en
 
 
 if __name__ == '__main__':
