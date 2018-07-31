@@ -8,7 +8,7 @@ import json
 
 sys.path.insert(0, os.path.dirname(os.path.abspath("__file__")))
 
-from conf.baidu import APP_id as appid, SECRET_KEY as secretKey, BASE_URL as base_url
+from conf.conf import APP_id as appid, SECRET_KEY as secretKey, BASE_URL as base_url
 
 # appid = '20180717000186240'
 #
@@ -28,7 +28,7 @@ class Query():
             raise ValueError
 
 
-class API:
+class Request:
     q = Query()
     def __init__(self, q):
         self.q = q
@@ -46,15 +46,11 @@ class API:
         return base_url + extend_url
 
     def request(self):
-        rep = requests.get(url=self.url)
+        response = requests.get(url=self.url)
+        self.response = json.loads(response.text)
+        sys.stdout.write('查询结果：' + self.response['trans_result'][0]['dst'] + '\n')
 
-        print(rep.text)
-        print(json.loads(rep.text))
-
-    def __setattr__(self, name, value):
-        print(123)
-        super(API, self).__setattr__(name, value)
 
 if __name__ == '__main__':
-    instance = API(sys.argv)
+    instance = Request(sys.argv)
     instance.request()
