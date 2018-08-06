@@ -5,16 +5,18 @@ import hashlib
 import requests
 import json
 
+from configparser import ConfigParser
 
 sys.path.insert(0, os.path.dirname(os.path.abspath("__file__")))
 
-from conf.conf import APP_id as appid, SECRET_KEY as secretKey, BASE_URL as base_url
 
-# appid = '20180717000186240'
-#
-# secretKey = 'bjnInnIwET9ZsnpjsTaD'
-#
-# base_url = "http://api.fanyi.baidu.com/api/trans/vip/translate"
+cfg = ConfigParser()
+cfg.read(r'../conf.ini')
+APP_ID = cfg.get('baidu', 'app_id')
+SECRET_KEY = cfg.get('baidu', 'secret_key')
+BASE_URL = cfg.get('baidu', 'base_url')
+FROM_LANG = cfg.get('baidu', 'fromLang')
+TO_LANG = cfg.get('baidu', 'toLang')
 
 
 class Query():
@@ -25,7 +27,7 @@ class Query():
         try:
             self.q = sys.argv[1]
         except:
-            raise ValueError
+            raise(ValueError, "Parameter error")
 
 
 class Request:
@@ -34,8 +36,7 @@ class Request:
         self.q = q
         self.fromLang = 'en'
         self.toLang = 'zh'
-        self.salt = random.randint(32768, 65536)
-        self.sign = appid + self.q + str(self.salt) + secretKey
+
         self.m2 = hashlib.md5()
         self.m2.update(self.sign.encode("utf-8"))
         self.sign = self.m2.hexdigest()
@@ -50,6 +51,12 @@ class Request:
         self.response = json.loads(response.text)
         sys.stdout.write('查询结果：' + self.response['trans_result'][0]['dst'] + '\n')
 
+    def build_sign(self):
+
+        self.salt = random.randint(32768, 65536)
+        self.sign = APP_ID + self.q + str(self.salt) + SECRET_KEY
+
+        return
 
 if __name__ == '__main__':
     instance = Request(sys.argv)
