@@ -2,8 +2,10 @@ import sys
 import os
 import random
 import hashlib
-import requests
 import json
+import argparse
+
+import requests
 
 from configparser import ConfigParser
 
