@@ -11,7 +11,6 @@ from configparser import ConfigParser
 
 sys.path.insert(0, os.path.dirname(os.path.abspath("__file__")))
 
-
 cfg = ConfigParser()
 cfg.read(r'../conf.ini')
 APP_ID = cfg.get('baidu', 'app_id')
@@ -21,51 +20,60 @@ FROM_LANG = cfg.get('language', 'fromLang')
 TO_LANG = cfg.get('language', 'toLang')
 
 
-class Query():
-    def __get__(self, instance, owner):
-       return self.query
-
-    def __set__(self, instance, value):
-        try:
-            self.query = sys.argv[1]
-        except:
-            raise(ValueError, "Parameter error")
-
-
 class Request:
-
-    query = Query()
     def __init__(self, query):
-
         self.query = query
-        self.sign = self.build_sign()
+        self.sign, self.salt = self.generate_sign()
 
     @property
     def url(self):
+        """
+        joint url between base-url and extend-url
+        """
         extend_url = "?q={0}&from={1}&to={2}&appid={3}&salt={4}&sign={5}".format(self.query, FROM_LANG, TO_LANG, APP_ID, self.salt, self.sign)
         return BASE_URL + extend_url
 
     def request(self):
+        """
+        request to http://api.fanyi.baidu.com for result
+        """
         return requests.get(url=self.url)
 
     def response(self):
+        """
+        get response
+        """
         response = self.request()
         return json.loads(response.text)
 
     def output(self):
+        """
+        print result
+        """
         response = self.response()
-        sys.stdout.write('\033[0;31m查询结果：' + response['trans_result'][0]['dst'] + '\033[0m\n')
+        if response.get("trans_result"):
+            sys.stdout.write(response["trans_result"][0]["dst"])
+        else:
+            sys.stdout.write("error")
 
-    def build_sign(self):
-        self.salt = random.randint(32768, 65536)
-        self.sign = APP_ID + self.query + str(self.salt) + SECRET_KEY
-        self.m2 = hashlib.md5()
-        self.m2.update(self.sign.encode("utf-8"))
-        self.sign = self.m2.hexdigest()
+    def generate_sign(self):
+        """
+        generate sign and salt
+        """
+        salt = random.randint(32768, 65536)
+        sign = APP_ID + self.query + str(salt) + SECRET_KEY
+        m2 = hashlib.md5()
+        m2.update(sign.encode("utf-8"))
+        sign_md5 = m2.hexdigest()
 
-        return self.sign
+        return sign_md5, salt
 
 
 if __name__ == '__main__':
-    instance = Request(sys.argv)
-    instance.output()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("word", type=str, help="input an English word")
+    args = parser.parse_args()
+    word = args.word
+
+    result = Request(word)
+    result.output()
