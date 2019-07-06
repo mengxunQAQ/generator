@@ -1,6 +1,3 @@
 todo:
-
-
-- package
-- youdao
-- argparse 参数解析
+    - 密码生成器： 每次数据库开账号，都需要生成随机的密码，比较不方便，希望直接命令行生成密码
+    - HMAC 密钥生成：`Django`之类框架配置的`SECRET_KEY`
